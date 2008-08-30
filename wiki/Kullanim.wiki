@@ -1,0 +1,51 @@
+#summary Kısa kullanım kılavuzu
+#labels usage,Featured,Phase-Implementation
+
+= Introduction =
+
+Derleme ipuçları
+
+
+= Details =
+
+Vista provider yazmak isteyenler için yazdığım c# kodunu şimdilik BSD lisansı ile paylaşıyorum:
+
+http://code.google.com/p/zxthumbs
+
+adresine gidip kaynak kodu arasında gezinebilirsiniz, çalıp çırpabilir, kendi "provider"'ınızı yazabilirsiniz.
+
+Koddan faydalı birşeyler çıkarabilmek için,
+
+1.Visual C# Express'i çalıştırın
+
+2.Class Library olacak şekilde bir proje oluşturun
+
+3.Proje özelliklerine girin ve "Signing" sekmesinde "Sign" the assembly seçeneğini işaretleyin. Listeden New seçerek yeni bir key oluşturun password girmenize gerek yok. Windows ile çalışacak her COM objesinin signing gereksinimi vardır.
+
+4.win32 class'ını hiç ellemeden ve değiştirmeden projenize enjekte edin.
+
+5.yeni bir class oluşturun (ya da sitede benim yazdığımı copy paste edin).
+
+6.Hemen ilk satırlarda görünen ProgID ile başlayan satıra bir id girin. Kafanıza göre sallayabilirsiniz burayı. Fakat GUID özeldir, google'a "Guid Generator" yazarak kendinize benzersiz bir guid oluşturun, benim verdiğim guid'i kullanmayın! Bahsi geçen satır şu:
+[ProgId("APM.SCRThumbs"), Guid("836d9b4f-9333-4d5e-a1bf-149b3741c163")]
+
+
+7. Getthumbnail fonksiyonu Windows'a bitmap'i sağlayan fonksiyon. SCR için gerekli olan [init], [diz] [çiz] [draw] gibi sallamasyon regionları silip yerine kendi kodunuzu girin ve compile edin. Bu arada not, göreceğiniz gibi GetStreamContents(); fonksiyonu dosyanın tamamını RAM'e atıyor. Yani provider'ını yazdığınız dosyalarınız çok büyükse program çalışmak için çok alana ihtiyaç duyabilir ve yavaşlar. Burda Scr dosyaları 6912 byte olduğu için bir parsing ile uğaşmıyorum, bu da hız kazandırıyor.Dileyen bu kısmı da değiştirebilir.
+
+
+8. elinizde bir DLL oluşacak. Bu DLL'i istediğiniz uzantıya iki işlem ile atayabilirsiniz:
+a) registry girdisi :
+HKCR ".\shellex\{e357fccd-a995-4576-b01f-234630154e96}" "" "{GUID}"
+
+örnek (scr için):
+HKCR ".SCR\shellex\{e357fccd-a995-4576-b01f-234630154e96}" "" "{836d9b4f-9333-4d5e-a1bf-149b3741c163}"
+
+b)DLL COM register:
+RegAsm.exe /codebase .dll
+
+Örnek:
+RegAsm.exe /codebase "c:\ArdaSCRThumbs.dll"
+
+Sonra Explorer'ı yeniden başlatmanız gerekiyor. Bazen Logon-logoff yapmak gerekebiliyor. Ama restart gerekmediğini deneyip onayladım.
+
+Debug sırasında sık sık thumbnail cache'inizi boşaltın. "bilgisayar > C: > sağ klik > özellikler > disk temizleme" başlığında bulunuyor.
